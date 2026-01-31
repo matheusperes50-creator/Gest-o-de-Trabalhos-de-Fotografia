@@ -13,7 +13,12 @@ export enum ShootType {
   PRE_WEDDING = 'Pre-Wedding',
   PORTRAIT = 'Retrato',
   EVENTO = 'Evento',
-  FORMATURA = 'Formatura'
+  FORMATURA = 'Formatura',
+  ENSAIO_SOLO = 'Ensaio Solo',
+  ENSAIO_CASAL = 'Ensaio Casal',
+  ENSAIO_GESTANTE = 'Ensaio Gestante',
+  CHA_REVELACAO = 'Chá Revelação',
+  ENSAIO_REVELACAO = 'Ensaio Revelação'
 }
 
 export interface Client {

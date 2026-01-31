@@ -29,17 +29,20 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
 
   const [aiAdvice, setAiAdvice] = useState<AIAdvice | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDateTBD, setIsDateTBD] = useState(false);
 
   useEffect(() => {
     if (shoot) {
       setFormData(shoot);
+      setIsDateTBD(shoot.shootDate === "" || shoot.shootDate === "A definir");
       setAiAdvice(null);
     } else {
+      const today = new Date().toISOString().split('T')[0];
       setFormData({
         clientId: '',
         type: ShootType.CASAMENTO,
         status: ShootStatus.SCHEDULED,
-        shootDate: new Date().toISOString().split('T')[0],
+        shootDate: today,
         deliveryDate: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
         publicationDate: new Date(Date.now() + 20 * 86400000).toISOString().split('T')[0],
         notes: '',
@@ -47,6 +50,7 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
         paidAmount: 0,
         location: '',
       });
+      setIsDateTBD(false);
     }
   }, [shoot, isOpen]);
 
@@ -71,15 +75,59 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
     }
   };
 
+  const shareIndividualWhatsApp = async () => {
+    const client = clients.find(c => c.id === formData.clientId);
+    const dateStr = isDateTBD ? "_A definir_" : new Intl.DateTimeFormat('pt-BR').format(new Date(formData.shootDate || ''));
+    
+    let message = `📸 *DETALHES DO TRABALHO*\n\n`;
+    message += `*Tipo:* ${formData.type}\n`;
+    message += `👤 *Cliente:* ${client?.name || '---'}\n`;
+    message += `📅 *Data:* ${dateStr}\n`;
+    message += `📍 *Local:* ${formData.location || '---'}\n`;
+    message += `💰 *Valor:* ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(formData.price || 0)}\n`;
+    message += `📝 *Notas:* ${formData.notes || '---'}\n\n`;
+    message += `_Enviado via GestãoFoto_`;
+
+    try {
+      await navigator.clipboard.writeText(message);
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+      alert("Relatório individual copiado!");
+    } catch (err) {
+      console.error('Falha ao copiar:', err);
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    }
+  };
+
+  const handleSave = () => {
+    const dataToSave = { ...formData };
+    if (isDateTBD) {
+      dataToSave.shootDate = "A definir";
+    }
+    onSave(dataToSave);
+  };
+
   const balanceToPay = (formData.price || 0) - (formData.paidAmount || 0);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
       <div className="bg-white w-full max-w-5xl max-h-[95vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-white/20">
         <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <div>
-            <h3 className="text-2xl font-black text-slate-800 tracking-tight">{shoot ? 'Editar Trabalho' : 'Novo Trabalho'}</h3>
-            <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">Configurações GestãoFoto</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tight">{shoot ? 'Editar Trabalho' : 'Novo Trabalho'}</h3>
+              <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">Configurações GestãoFoto</p>
+            </div>
+            {shoot && (
+               <button 
+                onClick={shareIndividualWhatsApp}
+                className="w-10 h-10 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-all shadow-sm"
+                title="Copiar Detalhes e Abrir WhatsApp"
+               >
+                 <i className="fab fa-whatsapp"></i>
+               </button>
+            )}
           </div>
           <button onClick={onClose} className="w-12 h-12 flex items-center justify-center hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200 shadow-sm">
             <i className="fas fa-times text-slate-400"></i>
@@ -167,11 +215,23 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 px-1">Data do Evento</label>
+                  <div className="flex justify-between items-center mb-2 px-1">
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Data do Evento</label>
+                    <label className="flex items-center gap-1.5 cursor-pointer group">
+                      <input 
+                        type="checkbox" 
+                        className="w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        checked={isDateTBD}
+                        onChange={(e) => setIsDateTBD(e.target.checked)}
+                      />
+                      <span className="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">A definir</span>
+                    </label>
+                  </div>
                   <input 
                     type="date" 
-                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700"
-                    value={formData.shootDate}
+                    disabled={isDateTBD}
+                    className={`w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700 ${isDateTBD ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
+                    value={formData.shootDate === "A definir" ? "" : formData.shootDate}
                     onChange={(e) => setFormData({...formData, shootDate: e.target.value})}
                   />
                 </div>
@@ -210,7 +270,7 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
                 </button>
               )}
               <button 
-                onClick={() => onSave(formData)}
+                onClick={handleSave}
                 disabled={isSyncing}
                 className="flex-[2] py-5 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-300 flex items-center justify-center gap-3 disabled:opacity-70"
               >

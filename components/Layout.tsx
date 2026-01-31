@@ -10,19 +10,13 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSyncing, isCloudSynced }) => {
-  // Nota: Substitua 'logo.png' pela URL real da sua logo enviada
-  const logoUrl = "https://raw.githubusercontent.com/stackblitz/stackblitz-images/main/gestao-foto-logo.png"; 
-
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-slate-900 text-white p-6 shadow-xl sticky top-0 h-screen">
         <div className="flex items-center gap-3 mb-12">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden">
-             <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" onError={(e) => e.currentTarget.src = "https://placehold.co/40x40?text=GF"} />
-          </div>
           <div className="flex items-center gap-2">
-            <i className="fas fa-camera-retro text-indigo-400"></i>
+            <i className="fas fa-camera-retro text-indigo-400 text-xl"></i>
             <h1 className="text-xl font-black tracking-tighter">GestãoFoto</h1>
           </div>
         </div>
@@ -69,11 +63,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
       <main className="flex-1 flex flex-col h-screen overflow-y-auto pb-20 md:pb-0">
         <header className="bg-white border-b border-slate-200 px-4 md:px-8 py-3 sticky top-0 z-50 flex justify-between items-center shadow-sm backdrop-blur-md bg-white/80">
           <div className="flex items-center gap-4">
-            <div className="md:hidden w-8 h-8 bg-white rounded flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm">
-              <img src={logoUrl} alt="L" className="w-full h-full object-cover" />
-            </div>
             <div className="flex items-center gap-2">
-              <i className="fas fa-camera-retro text-indigo-600 md:hidden"></i>
+              <i className="fas fa-camera-retro text-indigo-600"></i>
               <h2 className="text-[10px] md:text-xs font-black text-slate-800 uppercase tracking-[0.2em] truncate">
                 GestãoFoto &raquo; {activeTab}
               </h2>

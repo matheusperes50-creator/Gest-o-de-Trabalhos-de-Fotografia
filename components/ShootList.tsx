@@ -29,9 +29,10 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
   });
 
   const exportToCSV = () => {
-    const headers = ["ID", "ID_Cliente", "Nome_Cliente", "Tipo_Servico", "Local", "Data_Trabalho", "Data_Entrega", "Valor_RS", "Status", "Notas"];
+    const headers = ["ID", "ID_Cliente", "Nome_Cliente", "Tipo_Servico", "Local", "Data_Trabalho", "Valor_Total", "Valor_Pago", "Saldo_Devedor", "Status", "Notas"];
     const rows = filteredShoots.map(s => {
       const client = clients.find(c => c.id === s.clientId);
+      const balance = (s.price || 0) - (s.paidAmount || 0);
       return [
         s.id,
         s.clientId,
@@ -39,8 +40,9 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
         s.type,
         s.location,
         s.shootDate,
-        s.deliveryDate,
-        s.price,
+        s.price.toString().replace('.', ','),
+        s.paidAmount.toString().replace('.', ','),
+        balance.toString().replace('.', ',') ?? 0,
         s.status,
         s.notes.replace(/\n/g, " ")
       ];
@@ -51,10 +53,40 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `trabalhos_lensflow_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `relatorio_trabalhos_gestaofoto_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const shareWhatsAppList = async () => {
+    if (filteredShoots.length === 0) return;
+
+    let message = `📸 *GESTÃO FOTO - RELATÓRIO DE TRABALHOS*\n`;
+    message += `🔍 Filtro: ${statusFilter === 'All' ? 'Todos' : statusFilter}\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    filteredShoots.forEach((s, i) => {
+      const client = clients.find(c => c.id === s.clientId);
+      const dateStr = s.shootDate === "A definir" ? "_A definir_" : new Intl.DateTimeFormat('pt-BR').format(new Date(s.shootDate));
+      message += `*${i + 1}. ${s.type}*\n`;
+      message += `👤 Cliente: ${client?.name || '---'}\n`;
+      message += `📅 Data: ${dateStr}\n`;
+      message += `📍 Local: ${s.location || '---'}\n`;
+      message += `💰 Valor: ${formatCurrency(s.price)}\n`;
+      message += `📝 Status: ${s.status}\n\n`;
+    });
+
+    try {
+      await navigator.clipboard.writeText(message);
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+      alert("Relatório copiado para a área de transferência!");
+    } catch (err) {
+      console.error('Falha ao copiar:', err);
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    }
   };
 
   return (
@@ -72,12 +104,20 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
         </div>
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
           <button 
+            onClick={shareWhatsAppList}
+            className="px-4 py-3 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-600 hover:bg-emerald-100 transition-all shadow-sm flex items-center gap-2 font-bold text-xs uppercase tracking-wider"
+            title="Relatório WhatsApp"
+          >
+            <i className="fab fa-whatsapp text-lg"></i>
+            <span className="hidden sm:inline">WhatsApp</span>
+          </button>
+          <button 
             onClick={exportToCSV}
             className="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm flex items-center gap-2 font-bold text-xs uppercase tracking-wider"
-            title="Exportar para Google Sheets"
+            title="Exportar Relatório Excel"
           >
-            <i className="fas fa-file-csv text-lg"></i>
-            <span className="hidden sm:inline">Planilha</span>
+            <i className="fas fa-file-excel text-lg"></i>
+            <span className="hidden sm:inline">Excel</span>
           </button>
           
           <select 
@@ -105,7 +145,7 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
               <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
                 <th className="px-8 py-5">Cliente / Local</th>
                 <th className="px-6 py-5">Data</th>
-                <th className="px-6 py-5">Valor</th>
+                <th className="px-6 py-5">Financeiro</th>
                 <th className="px-6 py-5">Status</th>
                 <th className="px-8 py-5 text-right">Ações</th>
               </tr>
@@ -113,6 +153,9 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
             <tbody className="divide-y divide-slate-50">
               {filteredShoots.map(shoot => {
                 const client = clients.find(c => c.id === shoot.clientId);
+                const isFullyPaid = (shoot.paidAmount || 0) >= (shoot.price || 0);
+                const isTBD = shoot.shootDate === "A definir";
+                
                 return (
                   <tr key={shoot.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-8 py-5">
@@ -135,10 +178,21 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
                       </div>
                     </td>
                     <td className="px-6 py-5 text-sm text-slate-600 font-bold">
-                      {new Intl.DateTimeFormat('pt-BR').format(new Date(shoot.shootDate))}
+                      {isTBD ? (
+                        <span className="text-indigo-400 italic">A definir</span>
+                      ) : (
+                        new Intl.DateTimeFormat('pt-BR').format(new Date(shoot.shootDate))
+                      )}
                     </td>
-                    <td className="px-6 py-5 text-sm font-black text-slate-800">
-                      {formatCurrency(shoot.price || 0)}
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-slate-800">{formatCurrency(shoot.price || 0)}</span>
+                        <div className="flex items-center gap-1 mt-0.5">
+                           <span className={`text-[8px] font-black px-1 rounded ${isFullyPaid ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                             {isFullyPaid ? 'QUITADO' : `PAGO: ${formatCurrency(shoot.paidAmount || 0)}`}
+                           </span>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-5">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-tighter ${STATUS_COLORS[shoot.status]}`}>

@@ -17,4 +17,9 @@ export const SHOOT_TYPE_ICONS: Record<ShootType, React.ReactNode> = {
   [ShootType.PORTRAIT]: <i className="fas fa-user-tie text-slate-500"></i>,
   [ShootType.EVENTO]: <i className="fas fa-calendar-star text-indigo-500"></i>,
   [ShootType.FORMATURA]: <i className="fas fa-graduation-cap text-slate-800"></i>,
+  [ShootType.ENSAIO_SOLO]: <i className="fas fa-user text-emerald-600"></i>,
+  [ShootType.ENSAIO_CASAL]: <i className="fas fa-user-friends text-pink-500"></i>,
+  [ShootType.ENSAIO_GESTANTE]: <i className="fas fa-baby text-amber-500"></i>,
+  [ShootType.CHA_REVELACAO]: <i className="fas fa-children text-sky-400"></i>,
+  [ShootType.ENSAIO_REVELACAO]: <i className="fas fa-wand-magic-sparkles text-violet-500"></i>,
 };
