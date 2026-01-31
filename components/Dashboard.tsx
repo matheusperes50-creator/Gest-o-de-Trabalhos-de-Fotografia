@@ -15,8 +15,8 @@ const MONTHS = [
 
 const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) => {
   const [copying, setCopying] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState<number | 'all'>(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState<number | 'all'>(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number | 'all'>('all');
+  const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
   
   // Extrair anos únicos dos shoots para o filtro
   const availableYears = useMemo(() => {
@@ -82,7 +82,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
       })
       .slice(0, 10);
 
-    let message = `🚀 *GESTÃO FOTO - RESUMO ${selectedMonth !== 'all' ? MONTHS[selectedMonth].toUpperCase() : ''} ${selectedYear}*\n`;
+    let message = `🚀 *GESTÃO FOTO - RESUMO ${selectedMonth !== 'all' ? MONTHS[selectedMonth].toUpperCase() : 'GERAL'} ${selectedYear === 'all' ? '' : selectedYear}*\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
     
     upcoming.forEach((s, i) => {
@@ -183,7 +183,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
           <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center text-sm">
             <h3 className="font-bold text-slate-800">Jobs no Período</h3>
             <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-              {selectedMonth !== 'all' ? MONTHS[selectedMonth] : ''} {selectedYear}
+              {selectedMonth !== 'all' ? MONTHS[selectedMonth] : 'Geral'} {selectedYear === 'all' ? '' : selectedYear}
             </span>
           </div>
           <div className="divide-y divide-slate-50">
