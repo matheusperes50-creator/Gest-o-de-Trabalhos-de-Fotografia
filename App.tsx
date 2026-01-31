@@ -10,6 +10,7 @@ import { Shoot, Client, ShootStatus, ShootType } from './types';
 import { apiService } from './services/apiService';
 
 const generateId = () => Math.random().toString(36).substr(2, 9).toUpperCase();
+const STORAGE_KEY = 'lensflow_data_v10';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'shoots' | 'clients'>('dashboard');
@@ -33,9 +34,9 @@ const App: React.FC = () => {
       setShoots(remoteData.shoots || []);
       setClients(remoteData.clients || []);
       setIsCloudSynced(true);
-      localStorage.setItem('lensflow_data_v8', JSON.stringify(remoteData));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteData));
     } else {
-      const stored = localStorage.getItem('lensflow_data_v8');
+      const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         setShoots(parsed.shoots || []);
@@ -50,25 +51,25 @@ const App: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  const syncWithCloud = useCallback(async (newShoots: Shoot[], newClients: Client[]) => {
-    // Atualiza interface imediatamente
-    setShoots(newShoots);
-    setClients(newClients);
-    
-    // Salva cópia local de segurança
-    const localData = { shoots: newShoots, clients: newClients };
-    localStorage.setItem('lensflow_data_v8', JSON.stringify(localData));
-    
-    // Sincroniza com Google Sheets
+  /**
+   * Sincroniza o estado atual com o LocalStorage e com a Planilha Google
+   */
+  const triggerSync = async (updatedShoots: Shoot[], updatedClients: Client[]) => {
     setIsSyncing(true);
-    const success = await apiService.saveData(localData);
     
-    // Em modo no-cors, o 'success' aqui significa que a requisição de rede foi despachada
+    // Atualiza o estado visual imediatamente
+    setShoots(updatedShoots);
+    setClients(updatedClients);
+    
+    const dataToSave = { shoots: updatedShoots, clients: updatedClients };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    
+    // Envia para o Google Sheets e aguarda resposta
+    const success = await apiService.saveData(dataToSave);
     setIsCloudSynced(success);
     
-    // Feedback de finalização para o usuário
-    setTimeout(() => setIsSyncing(false), 1000);
-  }, []);
+    setTimeout(() => setIsSyncing(false), 800);
+  };
 
   // --- Operações de Trabalho (Shoot) ---
   const handleAddShoot = () => {
@@ -82,9 +83,14 @@ const App: React.FC = () => {
   };
 
   const handleDeleteShoot = (id: string) => {
-    if (window.confirm("Deseja realmente excluir este trabalho?")) {
+    const shoot = shoots.find(s => s.id === id);
+    const client = clients.find(c => c.id === shoot?.clientId);
+    const confirmMessage = `Tem certeza que deseja excluir o trabalho de "${client?.name || 'este cliente'}"?\n\n⚠️ IMPORTANTE: Isso removerá o registro permanentemente tanto no App quanto na planilha Google (aba TRABALHOS).`;
+    
+    if (window.confirm(confirmMessage)) {
       const updated = shoots.filter(s => s.id !== id);
-      syncWithCloud(updated, clients);
+      triggerSync(updated, clients);
+      setIsShootModalOpen(false);
     }
   };
 
@@ -101,7 +107,7 @@ const App: React.FC = () => {
       } as Shoot;
       updatedShoots = [newShoot, ...shoots];
     }
-    syncWithCloud(updatedShoots, clients);
+    triggerSync(updatedShoots, clients);
     setIsShootModalOpen(false);
   };
 
@@ -124,19 +130,21 @@ const App: React.FC = () => {
       const newClient: Client = { ...data, id: generateId() };
       updatedClients = [newClient, ...clients];
     }
-    syncWithCloud(shoots, updatedClients);
+    triggerSync(shoots, updatedClients);
     setIsClientModalOpen(false);
   };
 
   const handleDeleteClient = (id: string) => {
-    const hasShoots = shoots.some(s => s.clientId === id);
-    if (hasShoots) {
-      alert("Este cliente possui trabalhos vinculados e não pode ser excluído.");
-      return;
-    }
-    if (window.confirm("Deseja excluir este cliente?")) {
+    const client = clients.find(c => c.id === id);
+    const confirmMessage = `Tem certeza que deseja excluir o cadastro de "${client?.name || 'este cliente'}"?\n\n⚠️ IMPORTANTE: Isso removerá o cadastro tanto na aba CLIENTES quanto na aba TRABALHOS (todos os ensaios deste cliente serão apagados) tanto no App quanto na planilha Google.`;
+    
+    if (window.confirm(confirmMessage)) {
+      // Exclusão em Cascata: Remove o cliente e todos os seus trabalhos
       const updatedClients = clients.filter(c => c.id !== id);
-      syncWithCloud(shoots, updatedClients);
+      const updatedShoots = shoots.filter(s => s.clientId !== id);
+      
+      triggerSync(updatedShoots, updatedClients);
+      setIsClientModalOpen(false);
     }
   };
 
@@ -191,6 +199,7 @@ const App: React.FC = () => {
         isOpen={isShootModalOpen} 
         onClose={() => setIsShootModalOpen(false)} 
         onSave={handleSaveShoot} 
+        onDelete={handleDeleteShoot}
         shoot={selectedShoot} 
         clients={clients} 
         isSyncing={isSyncing}
@@ -200,6 +209,7 @@ const App: React.FC = () => {
         isOpen={isClientModalOpen}
         onClose={() => setIsClientModalOpen(false)}
         onSave={handleSaveClient}
+        onDelete={handleDeleteClient}
         client={selectedClient}
       />
     </Layout>

@@ -72,12 +72,15 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
           </div>
           
           <div className="flex items-center gap-4">
-             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${isSyncing ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-100'}`}>
+             <button 
+              onClick={() => window.location.reload()}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:bg-slate-50 ${isSyncing ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-100'}`}
+             >
                 <i className={`fas ${isSyncing ? 'fa-sync-alt fa-spin text-indigo-500' : isCloudSynced ? 'fa-cloud text-emerald-500' : 'fa-wifi-slash text-amber-500'} text-[10px]`}></i>
                 <span className={`text-[9px] font-black uppercase tracking-widest ${isSyncing ? 'text-indigo-600' : 'text-slate-400'}`}>
-                  {isSyncing ? 'Enviando...' : isCloudSynced ? 'Sincronizado' : 'Modo Local'}
+                  {isSyncing ? 'Sincronizando...' : isCloudSynced ? 'Sincronizado' : 'Atualizar'}
                 </span>
-             </div>
+             </button>
              <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
                 <i className="fas fa-bell"></i>
              </button>

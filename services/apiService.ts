@@ -2,10 +2,68 @@
 import { Shoot, Client } from '../types';
 
 /**
- * URL do Google Apps Script atualizada com a chave de implantação final.
+ * ==============================================================================
+ * CÓDIGO DO GOOGLE APPS SCRIPT (IMPORTANTE: ATUALIZE NA SUA PLANILHA)
+ * ==============================================================================
+ * 
+ * function doGet(e) {
+ *   var ss = SpreadsheetApp.getActiveSpreadsheet();
+ *   var sheet = ss.getSheetByName("lensflow_db") || ss.insertSheet("lensflow_db");
+ *   var data = sheet.getRange(1, 1).getValue();
+ *   return ContentService.createTextOutput(data || '{"shoots":[],"clients":[]}')
+ *     .setMimeType(ContentService.MimeType.JSON);
+ * }
+ * 
+ * function doPost(e) {
+ *   var ss = SpreadsheetApp.getActiveSpreadsheet();
+ *   var dbSheet = ss.getSheetByName("lensflow_db") || ss.insertSheet("lensflow_db");
+ *   var humanSheet = ss.getSheetByName("Visualizacao_Jobs") || ss.insertSheet("Visualizacao_Jobs");
+ *   
+ *   var dataString = e.postData.contents;
+ *   var data = JSON.parse(dataString);
+ *   
+ *   // 1. Salva o JSON bruto (Estado atual do App)
+ *   dbSheet.getRange(1, 1).setValue(dataString);
+ *   
+ *   // 2. Limpa a planilha visual para reconstruir SEM os itens excluídos
+ *   humanSheet.clear();
+ *   
+ *   // Reconstrução de Trabalhos
+ *   humanSheet.appendRow(["--- LISTA DE TRABALHOS ATUALIZADA ---"]);
+ *   humanSheet.getRange(1, 1, 1, 8).merge().setBackground("#1e293b").setFontColor("white").setFontWeight("bold").setHorizontalAlignment("center");
+ *   
+ *   humanSheet.appendRow(["ID", "Cliente", "Serviço", "Data", "Valor", "Status", "Local", "Notas"]);
+ *   humanSheet.getRange(2, 1, 1, 8).setBackground("#f1f5f9").setFontWeight("bold");
+ *   
+ *   if (data.shoots && data.shoots.length > 0) {
+ *     data.shoots.forEach(function(s) {
+ *       var cName = "Desconhecido";
+ *       if (data.clients) {
+ *         var c = data.clients.find(function(x){ return x.id === s.clientId });
+ *         if (c) cName = c.name;
+ *       }
+ *       humanSheet.appendRow([s.id, cName, s.type, s.shootDate, s.price, s.status, s.location, s.notes]);
+ *     });
+ *   }
+ *   
+ *   humanSheet.appendRow([""]);
+ *   humanSheet.appendRow(["--- BASE DE CLIENTES ---"]);
+ *   var row = humanSheet.getLastRow();
+ *   humanSheet.getRange(row, 1, 1, 4).merge().setBackground("#4f46e5").setFontColor("white").setFontWeight("bold");
+ *   
+ *   humanSheet.appendRow(["ID", "Nome", "WhatsApp", "E-mail"]);
+ *   if (data.clients && data.clients.length > 0) {
+ *     data.clients.forEach(function(c) {
+ *       humanSheet.appendRow([c.id, c.name, c.contact, c.email]);
+ *     });
+ *   }
+ *   
+ *   humanSheet.autoResizeColumns(1, 8);
+ *   return ContentService.createTextOutput("Sync Success").setMimeType(ContentService.MimeType.TEXT);
+ * }
  */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwCmdA464q2uEAhy-Fg4zhst8DxXSbhEoUUVPCD5B0fbeW32-OeFzb-9HKd4dtlpdwQfg/exec';
-const SHEET_PARAM = 'lensflow';
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbybR_IfmBTsPDOxH-S1z8hjzDy_fSLA8Ljhe_WlZZmPoanVGP5IXvon426Ukv-Trq7O/exec';
 
 export interface SyncData {
   shoots: Shoot[];
@@ -13,78 +71,41 @@ export interface SyncData {
 }
 
 export const apiService = {
-  /**
-   * Busca dados da planilha.
-   */
   async fetchData(): Promise<SyncData | null> {
     try {
-      const url = `${API_URL}?sheet=${SHEET_PARAM}&action=read&t=${Date.now()}`;
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${API_URL}?action=read&t=${Date.now()}`, {
         method: 'GET',
-        mode: 'cors',
         redirect: 'follow',
-        cache: 'no-cache'
       });
 
-      if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-      
+      if (!response.ok) return null;
       const text = await response.text();
       
-      // Se retornar HTML, o script pode estar configurado para login ou com erro de permissão
-      if (text.trim().toLowerCase().startsWith('<!doctype')) {
-        console.error("ERRO CLOUD: O Google retornou uma página (HTML) em vez de dados. Verifique se a implantação está configurada para acesso de 'Qualquer Pessoa' (Anyone).");
-        return null;
-      }
+      if (text.trim().startsWith('<!doctype') || text.includes('html')) return null;
 
-      try {
-        const data = JSON.parse(text);
-        if (data && (data.shoots || data.clients)) return data as SyncData;
-        return null;
-      } catch (e) {
-        console.error("ERRO CLOUD: Falha ao processar resposta JSON.", text);
-        return null;
-      }
+      return JSON.parse(text) as SyncData;
     } catch (error) {
-      console.warn('Conexão Cloud Offline (Leitura):', error);
       return null;
     }
   },
 
-  /**
-   * Salva dados na planilha enviando o estado completo.
-   */
   async saveData(data: SyncData): Promise<boolean> {
     try {
-      /**
-       * O Google Apps Script não suporta pre-flight CORS (OPTIONS).
-       * Usamos 'no-cors' e 'text/plain' para garantir que o navegador envie o POST 
-       * sem bloquear a requisição.
-       */
-      const url = `${API_URL}?sheet=${SHEET_PARAM}&action=update`;
-      const payload = JSON.stringify(data);
-
-      console.log("LensFlow Sync: Enviando pacote de dados para Google Sheets...");
-
-      await fetch(url, {
+      // Enviamos o JSON completo. Se um item não estiver no JSON, o Script o removerá da planilha ao dar clear()
+      const response = await fetch(API_URL, {
         method: 'POST',
-        mode: 'no-cors', 
-        cache: 'no-cache',
-        redirect: 'follow',
+        mode: 'no-cors',
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
+          'Content-Type': 'text/plain',
         },
-        body: payload,
+        body: JSON.stringify(data),
       });
 
-      /**
-       * Em 'no-cors', a resposta é opaca (não conseguimos ler se deu 200 ou 500).
-       * Se não disparou erro de rede (falta de internet), o pacote foi entregue ao servidor do Google.
-       */
-      console.log("LensFlow Sync: Dados despachados com sucesso via POST.");
+      // Como o Google Script em POST retorna redirect e mode: no-cors não permite ler, 
+      // assumimos sucesso se a requisição não der erro de rede.
       return true;
     } catch (error) {
-      console.error('LensFlow Sync: Erro de rede ou bloqueio de firewall.', error);
+      console.error('Falha crítica na sincronização nuvem:', error);
       return false;
     }
   }

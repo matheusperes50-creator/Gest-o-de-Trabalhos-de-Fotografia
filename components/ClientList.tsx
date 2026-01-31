@@ -54,7 +54,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, onAddClient, onEditCli
           <div key={client.id} className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 -mr-12 -mt-12 rounded-full transition-transform group-hover:scale-110"></div>
             
-            <div className="absolute top-6 right-6 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-6 right-6 flex gap-2 z-10">
               <button 
                 onClick={() => onEditClient(client)}
                 className="text-slate-400 hover:text-indigo-600 transition-colors p-2 bg-white rounded-lg shadow-sm border border-slate-100"
@@ -75,8 +75,8 @@ const ClientList: React.FC<ClientListProps> = ({ clients, onAddClient, onEditCli
               <div className="w-16 h-16 bg-slate-900 text-white flex items-center justify-center rounded-2xl text-xl font-black shadow-lg shadow-slate-200 uppercase">
                 {client.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
               </div>
-              <div>
-                <h4 className="font-black text-slate-800 text-lg leading-tight">{client.name}</h4>
+              <div className="max-w-[150px]">
+                <h4 className="font-black text-slate-800 text-lg leading-tight truncate">{client.name}</h4>
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">ID: {client.id}</p>
               </div>
             </div>

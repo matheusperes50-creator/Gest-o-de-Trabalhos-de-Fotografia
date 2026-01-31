@@ -77,7 +77,7 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
             title="Exportar para Google Sheets"
           >
             <i className="fas fa-file-csv text-lg"></i>
-            <span className="hidden sm:inline">Exportar Planilha</span>
+            <span className="hidden sm:inline">Planilha</span>
           </button>
           
           <select 
@@ -93,7 +93,7 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
           >
             <i className="fas fa-plus"></i>
-            <span>Novo Trabalho</span>
+            <span>Novo</span>
           </button>
         </div>
       </div>
@@ -103,8 +103,8 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                <th className="px-8 py-5">Cliente / Serviço e Local</th>
-                <th className="px-6 py-5">Data Trabalho</th>
+                <th className="px-8 py-5">Cliente / Local</th>
+                <th className="px-6 py-5">Data</th>
                 <th className="px-6 py-5">Valor</th>
                 <th className="px-6 py-5">Status</th>
                 <th className="px-8 py-5 text-right">Ações</th>
@@ -146,11 +146,11 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
                       </span>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-end gap-2">
                         <button 
                           onClick={() => onEditShoot(shoot)}
                           className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
-                          title="Editar Trabalho"
+                          title="Editar"
                         >
                           <i className="fas fa-edit text-sm"></i>
                         </button>

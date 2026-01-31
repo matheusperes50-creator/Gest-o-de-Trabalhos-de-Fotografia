@@ -6,10 +6,11 @@ interface ClientModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (client: Omit<Client, 'id'>) => void;
+  onDelete?: (id: string) => void;
   client?: Client;
 }
 
-const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, client }) => {
+const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, onDelete, client }) => {
   const [formData, setFormData] = useState<Omit<Client, 'id'>>({
     name: '',
     contact: '',
@@ -91,12 +92,23 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clie
             </div>
           </div>
 
-          <button 
-            type="submit"
-            className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
-          >
-            {client ? 'Atualizar Dados' : 'Criar Cliente'}
-          </button>
+          <div className="flex flex-col gap-3">
+            <button 
+              type="submit"
+              className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
+            >
+              {client ? 'Atualizar Dados' : 'Criar Cliente'}
+            </button>
+            {client && onDelete && (
+              <button 
+                type="button"
+                onClick={() => onDelete(client.id)}
+                className="w-full py-4 bg-red-50 text-red-600 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-red-100 transition-all"
+              >
+                Excluir Cadastro
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>

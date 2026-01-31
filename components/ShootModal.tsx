@@ -8,12 +8,13 @@ interface ShootModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (shoot: Partial<Shoot>) => void;
+  onDelete?: (id: string) => void;
   shoot?: Shoot;
   clients: Client[];
   isSyncing?: boolean;
 }
 
-const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, shoot, clients, isSyncing }) => {
+const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDelete, shoot, clients, isSyncing }) => {
   const [formData, setFormData] = useState<Partial<Shoot>>({
     clientId: '',
     type: ShootType.CASAMENTO,
@@ -186,20 +187,31 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, shoot,
               </div>
             </div>
 
-            <button 
-              onClick={() => onSave(formData)}
-              disabled={isSyncing}
-              className="w-full py-6 bg-slate-900 text-white rounded-3xl font-black text-lg uppercase tracking-widest hover:bg-slate-800 transition-all shadow-2xl shadow-slate-300 transform active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-70"
-            >
-              {isSyncing ? (
-                <>
-                  <i className="fas fa-sync fa-spin"></i>
-                  Salvando na Nuvem...
-                </>
-              ) : (
-                'Salvar Alterações'
+            <div className="flex flex-col sm:flex-row gap-4">
+              {shoot && onDelete && (
+                <button 
+                  onClick={() => onDelete(shoot.id)}
+                  className="flex-1 py-6 bg-red-50 text-red-600 rounded-3xl font-black text-lg uppercase tracking-widest hover:bg-red-100 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3"
+                >
+                  <i className="fas fa-trash-can"></i>
+                  Excluir
+                </button>
               )}
-            </button>
+              <button 
+                onClick={() => onSave(formData)}
+                disabled={isSyncing}
+                className="flex-[2] py-6 bg-slate-900 text-white rounded-3xl font-black text-lg uppercase tracking-widest hover:bg-slate-800 transition-all shadow-2xl shadow-slate-300 transform active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-70"
+              >
+                {isSyncing ? (
+                  <>
+                    <i className="fas fa-sync fa-spin"></i>
+                    Salvando...
+                  </>
+                ) : (
+                  'Salvar Alterações'
+                )}
+              </button>
+            </div>
           </div>
 
           {/* AI Helper Side */}
@@ -209,36 +221,32 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, shoot,
                 <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-sm shadow-lg shadow-indigo-200">
                   <i className="fas fa-sparkles"></i>
                 </div>
-                Assistente de IA
+                IA Assistant
               </h4>
               <button 
                 onClick={handleGenerateAI}
                 disabled={isGenerating || !formData.clientId}
                 className="text-[10px] font-black px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-md uppercase tracking-[0.15em]"
               >
-                {isGenerating ? <i className="fas fa-circle-notch fa-spin"></i> : 'Gerar Criativos'}
+                {isGenerating ? <i className="fas fa-circle-notch fa-spin"></i> : 'Gerar'}
               </button>
             </div>
 
             <div className="flex-1 space-y-8 overflow-y-auto pr-2 custom-scrollbar">
               {!aiAdvice && !isGenerating ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-40">
-                  <div className="w-24 h-24 bg-indigo-200/50 rounded-full flex items-center justify-center text-indigo-400 text-4xl mb-6">
+                  <div className="w-20 h-20 bg-indigo-200/50 rounded-full flex items-center justify-center text-indigo-400 text-4xl mb-6">
                      <i className="fas fa-robot"></i>
                   </div>
-                  <p className="text-xs font-black text-indigo-900 uppercase tracking-widest leading-loose">Deixe a IA criar suas legendas e organizar seu checklist pré-produção.</p>
+                  <p className="text-[10px] font-black text-indigo-900 uppercase tracking-widest leading-loose">Deixe a IA criar suas legendas e organizar seu checklist.</p>
                 </div>
               ) : isGenerating ? (
                 <div className="h-full flex flex-col items-center justify-center space-y-8">
                   <div className="relative">
-                    <div className="w-20 h-20 border-4 border-indigo-600/10 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <div className="w-16 h-16 border-4 border-indigo-600/10 border-t-indigo-600 rounded-full animate-spin"></div>
                     <div className="absolute inset-0 flex items-center justify-center">
-                       <i className="fas fa-wand-magic-sparkles text-indigo-600 text-2xl animate-pulse"></i>
+                       <i className="fas fa-wand-magic-sparkles text-indigo-600 text-xl animate-pulse"></i>
                     </div>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-black text-indigo-900 uppercase tracking-widest mb-1">Processando...</p>
-                    <p className="text-[10px] text-indigo-500 font-bold">Analisando tipo de trabalho e perfil do cliente.</p>
                   </div>
                 </div>
               ) : (
@@ -246,24 +254,21 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, shoot,
                   <section>
                     <div className="flex items-center gap-2 mb-4">
                        <i className="fab fa-instagram text-rose-500"></i>
-                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Cópia para Redes Sociais</h5>
+                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Instagram Copy</h5>
                     </div>
                     <div className="p-6 bg-white border border-indigo-100 rounded-3xl text-sm text-slate-700 leading-relaxed shadow-sm font-medium italic relative group">
                       {aiAdvice?.instagramCaption}
-                      <button className="absolute top-4 right-4 text-slate-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <i className="fas fa-copy"></i>
-                      </button>
                     </div>
                   </section>
 
                   <section>
                     <div className="flex items-center gap-2 mb-4">
                        <i className="fas fa-video text-indigo-500"></i>
-                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ideias de Vídeo Curto</h5>
+                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Reel Ideas</h5>
                     </div>
                     <div className="space-y-3">
                       {aiAdvice?.reelIdeas.map((idea, i) => (
-                        <div key={i} className="flex gap-4 p-5 bg-white border border-indigo-100 rounded-2xl shadow-sm hover:border-indigo-300 transition-colors">
+                        <div key={i} className="flex gap-4 p-5 bg-white border border-indigo-100 rounded-2xl shadow-sm">
                           <span className="font-black text-indigo-600 text-sm">#{i+1}</span>
                           <p className="text-xs font-bold text-slate-800 leading-snug">{idea}</p>
                         </div>
