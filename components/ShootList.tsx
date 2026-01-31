@@ -14,6 +14,7 @@ interface ShootListProps {
 const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEditShoot, onDeleteShoot }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<ShootStatus | 'All'>('All');
+  const [copying, setCopying] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -79,13 +80,10 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
 
     try {
       await navigator.clipboard.writeText(message);
-      const encoded = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encoded}`, '_blank');
-      alert("Relatório copiado para a área de transferência!");
+      setCopying(true);
+      setTimeout(() => setCopying(false), 2000);
     } catch (err) {
       console.error('Falha ao copiar:', err);
-      const encoded = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encoded}`, '_blank');
     }
   };
 
@@ -105,11 +103,11 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
           <button 
             onClick={shareWhatsAppList}
-            className="px-4 py-3 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-600 hover:bg-emerald-100 transition-all shadow-sm flex items-center gap-2 font-bold text-xs uppercase tracking-wider"
-            title="Relatório WhatsApp"
+            className={`px-4 py-3 border rounded-2xl transition-all shadow-sm flex items-center gap-2 font-bold text-xs uppercase tracking-wider ${copying ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'}`}
+            title="Copiar Relatório Formatado"
           >
-            <i className="fab fa-whatsapp text-lg"></i>
-            <span className="hidden sm:inline">WhatsApp</span>
+            <i className={`fas ${copying ? 'fa-check' : 'fab fa-whatsapp'} text-lg`}></i>
+            <span className="hidden sm:inline">{copying ? 'Copiado!' : 'Copiar Relatório'}</span>
           </button>
           <button 
             onClick={exportToCSV}

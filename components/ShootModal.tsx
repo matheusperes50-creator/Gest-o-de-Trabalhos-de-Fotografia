@@ -30,6 +30,7 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
   const [aiAdvice, setAiAdvice] = useState<AIAdvice | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDateTBD, setIsDateTBD] = useState(false);
+  const [copying, setCopying] = useState(false);
 
   useEffect(() => {
     if (shoot) {
@@ -90,13 +91,10 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
 
     try {
       await navigator.clipboard.writeText(message);
-      const encoded = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encoded}`, '_blank');
-      alert("Relatório individual copiado!");
+      setCopying(true);
+      setTimeout(() => setCopying(false), 2000);
     } catch (err) {
       console.error('Falha ao copiar:', err);
-      const encoded = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encoded}`, '_blank');
     }
   };
 
@@ -122,10 +120,10 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
             {shoot && (
                <button 
                 onClick={shareIndividualWhatsApp}
-                className="w-10 h-10 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-all shadow-sm"
-                title="Copiar Detalhes e Abrir WhatsApp"
+                className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all shadow-sm ${copying ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'}`}
+                title={copying ? 'Copiado!' : 'Copiar Detalhes do Trabalho'}
                >
-                 <i className="fab fa-whatsapp"></i>
+                 <i className={`fas ${copying ? 'fa-check' : 'fab fa-whatsapp'}`}></i>
                </button>
             )}
           </div>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Shoot, Client, ShootStatus } from '../types';
 
 interface DashboardProps {
@@ -9,6 +9,8 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) => {
+  const [copying, setCopying] = useState(false);
+  
   const totalContracted = shoots.reduce((acc, curr) => acc + (curr.price || 0), 0);
   const totalReceived = shoots.reduce((acc, curr) => acc + (curr.paidAmount || 0), 0);
   const totalToReceive = totalContracted - totalReceived;
@@ -55,27 +57,27 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
       })
       .slice(0, 5);
 
-    let message = `🚀 *GESTÃO FOTO - RESUMO DA AGENDA*\n\n`;
+    let message = `🚀 *GESTÃO FOTO - RESUMO DA AGENDA*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
     
     upcoming.forEach((s, i) => {
       const client = clients.find(c => c.id === s.clientId);
       const dateStr = s.shootDate === "A definir" ? "_A definir_" : new Intl.DateTimeFormat('pt-BR').format(new Date(s.shootDate));
-      message += `${i + 1}. *${s.type}*\n`;
+      message += `*${i + 1}. ${s.type}*\n`;
       message += `👤 Cliente: ${client?.name || '---'}\n`;
       message += `📅 Data: ${dateStr}\n`;
       message += `📍 Local: ${s.location || 'Não informado'}\n`;
       message += `💰 Status: ${s.paidAmount >= s.price ? '✅ Pago' : '⚠️ Pendente'}\n\n`;
     });
 
+    message += `_Gerado em: ${new Date().toLocaleDateString('pt-BR')}_`;
+
     try {
       await navigator.clipboard.writeText(message);
-      const encoded = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encoded}`, '_blank');
-      alert("Relatório copiado e WhatsApp aberto!");
+      setCopying(true);
+      setTimeout(() => setCopying(false), 2000);
     } catch (err) {
       console.error('Falha ao copiar:', err);
-      const encoded = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encoded}`, '_blank');
     }
   };
 
@@ -108,10 +110,10 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
         <div className="flex gap-2 w-full sm:w-auto">
           <button 
             onClick={shareWhatsAppSummary}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-600 hover:bg-emerald-100 transition-all shadow-sm font-bold text-[10px] uppercase tracking-widest"
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border rounded-xl transition-all shadow-sm font-bold text-[10px] uppercase tracking-widest ${copying ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'}`}
           >
-            <i className="fab fa-whatsapp"></i>
-            Resumo WhatsApp
+            <i className={`fas ${copying ? 'fa-check' : 'fab fa-whatsapp'}`}></i>
+            {copying ? 'Copiado!' : 'Copiar Resumo'}
           </button>
           <button 
             onClick={exportFinancialReport}
