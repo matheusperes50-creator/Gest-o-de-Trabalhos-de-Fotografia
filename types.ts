@@ -33,7 +33,8 @@ export interface Shoot {
   publicationDate: string;
   notes: string;
   price: number;
-  location: string; // Novo campo
+  paidAmount: number; // Valor já pago pelo cliente
+  location: string;
 }
 
 export interface AIAdvice {

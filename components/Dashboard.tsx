@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Shoot, Client, ShootStatus } from '../types';
-import { STATUS_COLORS } from '../constants';
 
 interface DashboardProps {
   shoots: Shoot[];
@@ -10,18 +9,19 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) => {
-  const totalRevenue = shoots.reduce((acc, curr) => acc + (curr.price || 0), 0);
-  const avgTicket = shoots.length > 0 ? totalRevenue / shoots.length : 0;
+  const totalContracted = shoots.reduce((acc, curr) => acc + (curr.price || 0), 0);
+  const totalReceived = shoots.reduce((acc, curr) => acc + (curr.paidAmount || 0), 0);
+  const totalToReceive = totalContracted - totalReceived;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
   const stats = [
-    { label: 'Faturamento', value: formatCurrency(totalRevenue), icon: 'fa-money-bill-trend-up', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Ticket Médio', value: formatCurrency(avgTicket), icon: 'fa-chart-line', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Em Edição', value: shoots.filter(s => s.status === ShootStatus.EDITING).length, icon: 'fa-wand-magic-sparkles', color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Clientes', value: clients.length, icon: 'fa-users', color: 'text-sky-600', bg: 'bg-sky-50' },
+    { label: 'Total Contratado', value: formatCurrency(totalContracted), icon: 'fa-file-invoice-dollar', color: 'text-slate-600', bg: 'bg-slate-100' },
+    { label: 'Recebido', value: formatCurrency(totalReceived), icon: 'fa-hand-holding-dollar', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'A Receber', value: formatCurrency(totalToReceive), icon: 'fa-clock-rotate-left', color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Jobs Ativos', value: shoots.filter(s => s.status !== ShootStatus.DELIVERED).length, icon: 'fa-camera', color: 'text-indigo-600', bg: 'bg-indigo-50' },
   ];
 
   const upcoming = [...shoots]
@@ -31,7 +31,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
 
   return (
     <div className="space-y-8">
-      {/* Stats Grid */}
+      {/* Financial Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
           <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
@@ -49,13 +49,14 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center text-sm">
-            <h3 className="font-bold text-slate-800">Agenda Próxima</h3>
-            <button className="text-indigo-600 text-[10px] font-black uppercase tracking-widest hover:underline">Ver Todos</button>
+            <h3 className="font-bold text-slate-800">Próximos Ensaios</h3>
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">Agenda</span>
           </div>
           <div className="divide-y divide-slate-50">
             {upcoming.length > 0 ? (
               upcoming.map(shoot => {
                 const client = clients.find(c => c.id === shoot.clientId);
+                const isPaid = (shoot.paidAmount || 0) >= (shoot.price || 0);
                 return (
                   <div key={shoot.id} className="p-6 hover:bg-slate-50 transition-colors flex items-center justify-between group">
                     <div className="flex items-center gap-4">
@@ -65,7 +66,14 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
                       </div>
                       <div className="max-w-[150px] md:max-w-xs">
                         <h4 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{client?.name || 'Cliente'}</h4>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{shoot.type}</p>
+                        <div className="flex items-center gap-2">
+                           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{shoot.type}</p>
+                           {isPaid ? (
+                             <span className="text-[8px] px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-md font-black">PAGO</span>
+                           ) : (
+                             <span className="text-[8px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-md font-black">PENDENTE</span>
+                           )}
+                        </div>
                       </div>
                     </div>
                     <button 
@@ -79,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
               })
             ) : (
               <div className="p-12 text-center">
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Agenda livre.</p>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Sem compromissos futuros.</p>
               </div>
             )}
           </div>
@@ -88,36 +96,28 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
         <div className="space-y-6">
           <div className="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden group">
             <div className="relative z-10">
-              <h3 className="text-base font-black mb-1 uppercase tracking-tight">Metas Mensais</h3>
-              <p className="text-indigo-100 text-[10px] mb-6 font-bold uppercase tracking-widest">Progresso de faturamento</p>
+              <h3 className="text-base font-black mb-1 uppercase tracking-tight">Saúde Financeira</h3>
+              <p className="text-indigo-100 text-[10px] mb-6 font-bold uppercase tracking-widest">Percentual Recebido</p>
               
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-[10px] font-black text-indigo-200 mb-1 tracking-widest">
-                    <span>STATUS</span>
-                    <span>{Math.round((totalRevenue / 15000) * 100)}%</span>
+                    <span>LIQUIDEZ</span>
+                    <span>{totalContracted > 0 ? Math.round((totalReceived / totalContracted) * 100) : 0}%</span>
                   </div>
                   <div className="w-full bg-indigo-900/30 h-2 rounded-full overflow-hidden border border-indigo-500/30">
                     <div 
                       className="h-full bg-white rounded-full shadow-inner transition-all duration-1000" 
-                      style={{ width: `${Math.min((totalRevenue / 15000) * 100, 100)}%` }}
+                      style={{ width: `${totalContracted > 0 ? Math.min((totalReceived / totalContracted) * 100, 100) : 0}%` }}
                     ></div>
                   </div>
                 </div>
+                <div className="pt-4 border-t border-indigo-500/30">
+                   <p className="text-[9px] text-indigo-100 uppercase font-black">Meta Mensal</p>
+                   <p className="text-xl font-black">{formatCurrency(totalReceived)}</p>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-             <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-lg shadow-sm">
-                   <i className="fas fa-shield-check"></i>
-                </div>
-                <div>
-                   <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Backup Cloud</p>
-                   <p className="text-[9px] text-emerald-600 font-bold">Sincronizado automaticamente com Google Sheets.</p>
-                </div>
-             </div>
           </div>
         </div>
       </div>
