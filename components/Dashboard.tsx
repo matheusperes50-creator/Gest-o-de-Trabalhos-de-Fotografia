@@ -7,6 +7,12 @@ interface DashboardProps {
   shoots: Shoot[];
   clients: Client[];
   onViewShoot: (shoot: Shoot) => void;
+  isPrivateMode: boolean;
+  setIsPrivateMode: (value: boolean) => void;
+  selectedMonth: number | 'all';
+  setSelectedMonth: (value: number | 'all') => void;
+  selectedYear: number | 'all';
+  setSelectedYear: (value: number | 'all') => void;
 }
 
 const MONTHS = [
@@ -14,12 +20,19 @@ const MONTHS = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) => {
+const Dashboard: React.FC<DashboardProps> = ({ 
+  shoots, 
+  clients, 
+  onViewShoot, 
+  isPrivateMode, 
+  setIsPrivateMode,
+  selectedMonth,
+  setSelectedMonth,
+  selectedYear,
+  setSelectedYear
+}) => {
   const [copying, setCopying] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState<number | 'all'>('all');
-  const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
-  const [isPrivateMode, setIsPrivateMode] = useState(false);
   
   // Extrair anos únicos dos shoots para o filtro
   const availableYears = useMemo(() => {
@@ -47,34 +60,6 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
   const formatCurrency = (value: number) => {
     if (isPrivateMode) return 'R$ •••••';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-  };
-
-  const exportFinancialReport = () => {
-    const headers = ["ID", "Cliente", "Tipo", "Data", "Status", "Valor Total", "Valor Pago", "Saldo Devedor"];
-    const rows = filteredByPeriod.map(s => {
-      const client = clients.find(c => c.id === s.clientId);
-      const balance = (s.price || 0) - (s.paidAmount || 0);
-      return [
-        s.id,
-        client?.name || 'N/A',
-        s.type,
-        s.shootDate,
-        s.status,
-        s.price.toString().replace('.', ','),
-        s.paidAmount.toString().replace('.', ','),
-        balance.toString().replace('.', ',')
-      ];
-    });
-
-    const csvContent = [headers, ...rows].map(e => e.join(";")).join("\n");
-    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Relatorio_Financeiro_${selectedMonth !== 'all' ? MONTHS[selectedMonth] : 'Geral'}_${selectedYear}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const shareWhatsAppSummary = async () => {

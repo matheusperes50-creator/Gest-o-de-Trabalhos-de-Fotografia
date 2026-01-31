@@ -9,6 +9,11 @@ interface ShootListProps {
   onAddShoot: () => void;
   onEditShoot: (shoot: Shoot) => void;
   onDeleteShoot: (id: string) => void;
+  isPrivateMode: boolean;
+  monthFilter: number | 'all';
+  setMonthFilter: (value: number | 'all') => void;
+  yearFilter: number | 'all';
+  setYearFilter: (value: number | 'all') => void;
 }
 
 const MONTHS = [
@@ -16,11 +21,20 @@ const MONTHS = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEditShoot, onDeleteShoot }) => {
+const ShootList: React.FC<ShootListProps> = ({ 
+  shoots, 
+  clients, 
+  onAddShoot, 
+  onEditShoot, 
+  onDeleteShoot,
+  isPrivateMode,
+  monthFilter,
+  setMonthFilter,
+  yearFilter,
+  setYearFilter
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<ShootStatus | 'All'>('All');
-  const [monthFilter, setMonthFilter] = useState<number | 'all'>('all');
-  const [yearFilter, setYearFilter] = useState<number | 'all'>(new Date().getFullYear());
   const [copying, setCopying] = useState(false);
 
   const availableYears = useMemo(() => {
@@ -31,6 +45,7 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
   }, [shoots]);
 
   const formatCurrency = (value: number) => {
+    if (isPrivateMode) return 'R$ •••••';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
@@ -56,42 +71,11 @@ const ShootList: React.FC<ShootListProps> = ({ shoots, clients, onAddShoot, onEd
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const exportToCSV = () => {
-    const headers = ["ID", "ID_Cliente", "Nome_Cliente", "Tipo_Servico", "Local", "Data_Trabalho", "Valor_Total", "Valor_Pago", "Saldo_Devedor", "Status", "Notas"];
-    const rows = filteredShoots.map(s => {
-      const client = clients.find(c => c.id === s.clientId);
-      const balance = (s.price || 0) - (s.paidAmount || 0);
-      return [
-        s.id,
-        s.clientId,
-        client?.name || 'N/A',
-        s.type,
-        s.location,
-        s.shootDate,
-        s.price.toString().replace('.', ','),
-        s.paidAmount.toString().replace('.', ','),
-        balance.toString().replace('.', ',') ?? 0,
-        s.status,
-        s.notes.replace(/\n/g, " ")
-      ];
-    });
-
-    const csvContent = [headers, ...rows].map(e => e.join(";")).join("\n");
-    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `trabalhos_filtrados_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const shareWhatsAppList = async () => {
     if (filteredShoots.length === 0) return;
 
     let message = `📸 *GESTÃO FOTO - LISTA DE TRABALHOS*\n`;
-    message += `📅 Período: ${monthFilter !== 'all' ? MONTHS[monthFilter] : ''} ${yearFilter}\n`;
+    message += `📅 Período: ${monthFilter !== 'all' ? MONTHS[monthFilter] : ''} ${yearFilter === 'all' ? 'Sempre' : yearFilter}\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
 
     filteredShoots.forEach((s, i) => {

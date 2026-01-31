@@ -11,6 +11,7 @@ import { apiService } from './services/apiService';
 
 const generateId = () => Math.random().toString(36).substr(2, 9).toUpperCase();
 const STORAGE_KEY = 'lensflow_data_v10';
+const SETTINGS_KEY = 'lensflow_settings_v1';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'shoots' | 'clients'>('dashboard');
@@ -20,6 +21,13 @@ const App: React.FC = () => {
   const [isCloudSynced, setIsCloudSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   
+  // Estados Persistentes (Filtros e Privacidade)
+  const [isPrivateMode, setIsPrivateMode] = useState(true); // Começa sempre oculto
+  const [dashboardMonth, setDashboardMonth] = useState<number | 'all'>('all');
+  const [dashboardYear, setDashboardYear] = useState<number | 'all'>('all');
+  const [shootMonth, setShootMonth] = useState<number | 'all'>('all');
+  const [shootYear, setShootYear] = useState<number | 'all'>('all');
+
   // Modais
   const [isShootModalOpen, setIsShootModalOpen] = useState(false);
   const [selectedShoot, setSelectedShoot] = useState<Shoot | undefined>();
@@ -30,6 +38,17 @@ const App: React.FC = () => {
     setIsLoading(true);
     const remoteData = await apiService.fetchData();
     
+    // Carregar configurações de preferências (opcional: se quiser que o olho lembre a última escolha)
+    const storedSettings = localStorage.getItem(SETTINGS_KEY);
+    if (storedSettings) {
+      const settings = JSON.parse(storedSettings);
+      setIsPrivateMode(settings.isPrivateMode ?? true);
+      setDashboardMonth(settings.dashboardMonth ?? 'all');
+      setDashboardYear(settings.dashboardYear ?? 'all');
+      setShootMonth(settings.shootMonth ?? 'all');
+      setShootYear(settings.shootYear ?? 'all');
+    }
+
     if (remoteData) {
       setShoots(remoteData.shoots || []);
       setClients(remoteData.clients || []);
@@ -50,6 +69,18 @@ const App: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Salvar preferências sempre que mudarem
+  useEffect(() => {
+    const settings = {
+      isPrivateMode,
+      dashboardMonth,
+      dashboardYear,
+      shootMonth,
+      shootYear
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }, [isPrivateMode, dashboardMonth, dashboardYear, shootMonth, shootYear]);
 
   /**
    * Sincroniza o estado atual com o LocalStorage e com a Planilha Google
@@ -154,7 +185,7 @@ const App: React.FC = () => {
         <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl shadow-indigo-500/20 animate-bounce">
           <i className="fas fa-camera-retro text-3xl"></i>
         </div>
-        <h1 className="text-xl font-black uppercase tracking-[0.4em] mb-4 text-white/90">LensFlow</h1>
+        <h1 className="text-xl font-black uppercase tracking-[0.4em] mb-4 text-white/90">GestãoFoto</h1>
         <div className="flex items-center gap-3 bg-white/5 px-6 py-3 rounded-full border border-white/10">
           <div className="w-2 h-2 bg-indigo-400 rounded-full animate-ping"></div>
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300">Sincronizando Banco de Dados...</p>
@@ -174,7 +205,13 @@ const App: React.FC = () => {
         <Dashboard 
           shoots={shoots} 
           clients={clients} 
-          onViewShoot={handleEditShoot} 
+          onViewShoot={handleEditShoot}
+          isPrivateMode={isPrivateMode}
+          setIsPrivateMode={setIsPrivateMode}
+          selectedMonth={dashboardMonth}
+          setSelectedMonth={setDashboardMonth}
+          selectedYear={dashboardYear}
+          setSelectedYear={setDashboardYear}
         />
       )}
       {activeTab === 'shoots' && (
@@ -183,7 +220,12 @@ const App: React.FC = () => {
           clients={clients} 
           onAddShoot={handleAddShoot} 
           onEditShoot={handleEditShoot} 
-          onDeleteShoot={handleDeleteShoot} 
+          onDeleteShoot={handleDeleteShoot}
+          isPrivateMode={isPrivateMode}
+          monthFilter={shootMonth}
+          setMonthFilter={setShootMonth}
+          yearFilter={shootYear}
+          setYearFilter={setShootYear}
         />
       )}
       {activeTab === 'clients' && (
