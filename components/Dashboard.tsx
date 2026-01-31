@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Shoot, Client, ShootStatus } from '../types';
+import BudgetModal from './BudgetModal';
 
 interface DashboardProps {
   shoots: Shoot[];
@@ -17,6 +18,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
   const [copying, setCopying] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<number | 'all'>('all');
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   
   // Extrair anos únicos dos shoots para o filtro
   const availableYears = useMemo(() => {
@@ -115,7 +117,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
 
   return (
     <div className="space-y-8">
-      {/* Barra de Filtros Temporal */}
+      {/* Barra de Filtros Temporal e Orçamento */}
       <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
@@ -147,21 +149,23 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
 
         <div className="flex gap-2 w-full md:w-auto">
           <button 
+            onClick={() => setIsBudgetModalOpen(true)}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white border border-indigo-600 rounded-xl transition-all shadow-lg shadow-indigo-100 font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-700"
+          >
+            <i className="fas fa-magic"></i>
+            Gerar Orçamento
+          </button>
+          <button 
             onClick={shareWhatsAppSummary}
             className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 border rounded-xl transition-all shadow-sm font-bold text-[10px] uppercase tracking-widest ${copying ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'}`}
           >
             <i className={`fas ${copying ? 'fa-check' : 'fab fa-whatsapp'}`}></i>
-            {copying ? 'Copiado!' : 'Copiar Resumo Período'}
-          </button>
-          <button 
-            onClick={exportFinancialReport}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-indigo-600 transition-all shadow-sm font-bold text-[10px] uppercase tracking-widest"
-          >
-            <i className="fas fa-file-excel"></i>
-            Relatório CSV
+            {copying ? 'Copiado!' : 'Copiar Resumo'}
           </button>
         </div>
       </div>
+
+      <BudgetModal isOpen={isBudgetModalOpen} onClose={() => setIsBudgetModalOpen(false)} />
 
       {/* Financial Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
