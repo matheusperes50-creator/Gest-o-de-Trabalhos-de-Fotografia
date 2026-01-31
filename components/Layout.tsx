@@ -21,7 +21,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden">
              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" onError={(e) => e.currentTarget.src = "https://placehold.co/40x40?text=GF"} />
           </div>
-          <h1 className="text-xl font-black tracking-tighter">GestãoFoto</h1>
+          <div className="flex items-center gap-2">
+            <i className="fas fa-camera-retro text-indigo-400"></i>
+            <h1 className="text-xl font-black tracking-tighter">GestãoFoto</h1>
+          </div>
         </div>
         
         <nav className="flex-1 space-y-2">
@@ -69,9 +72,12 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
             <div className="md:hidden w-8 h-8 bg-white rounded flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm">
               <img src={logoUrl} alt="L" className="w-full h-full object-cover" />
             </div>
-            <h2 className="text-[10px] md:text-xs font-black text-slate-800 uppercase tracking-[0.2em] truncate">
-              GestãoFoto &raquo; {activeTab}
-            </h2>
+            <div className="flex items-center gap-2">
+              <i className="fas fa-camera-retro text-indigo-600 md:hidden"></i>
+              <h2 className="text-[10px] md:text-xs font-black text-slate-800 uppercase tracking-[0.2em] truncate">
+                GestãoFoto &raquo; {activeTab}
+              </h2>
+            </div>
           </div>
           
           <div className="flex items-center gap-4">
