@@ -19,6 +19,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
   const [selectedMonth, setSelectedMonth] = useState<number | 'all'>('all');
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isPrivateMode, setIsPrivateMode] = useState(false);
   
   // Extrair anos únicos dos shoots para o filtro
   const availableYears = useMemo(() => {
@@ -44,6 +45,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
   const totalToReceive = totalContracted - totalReceived;
 
   const formatCurrency = (value: number) => {
+    if (isPrivateMode) return 'R$ •••••';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
@@ -148,6 +150,15 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
         </div>
 
         <div className="flex gap-2 w-full md:w-auto">
+          {/* Botão de Privacidade */}
+          <button 
+            onClick={() => setIsPrivateMode(!isPrivateMode)}
+            className={`w-12 h-10 flex items-center justify-center border rounded-xl transition-all ${isPrivateMode ? 'bg-amber-50 border-amber-200 text-amber-600 shadow-inner' : 'bg-white border-slate-200 text-slate-400 hover:text-indigo-600 hover:bg-slate-50'}`}
+            title={isPrivateMode ? "Mostrar valores" : "Ocultar valores"}
+          >
+            <i className={`fas ${isPrivateMode ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+          </button>
+
           <button 
             onClick={() => setIsBudgetModalOpen(true)}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white border border-indigo-600 rounded-xl transition-all shadow-lg shadow-indigo-100 font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-700"
@@ -155,6 +166,7 @@ const Dashboard: React.FC<DashboardProps> = ({ shoots, clients, onViewShoot }) =
             <i className="fas fa-magic"></i>
             Gerar Orçamento
           </button>
+          
           <button 
             onClick={shareWhatsAppSummary}
             className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 border rounded-xl transition-all shadow-sm font-bold text-[10px] uppercase tracking-widest ${copying ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'}`}
