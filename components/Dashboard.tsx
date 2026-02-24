@@ -7,8 +7,6 @@ interface DashboardProps {
   shoots: Shoot[];
   clients: Client[];
   onViewShoot: (shoot: Shoot) => void;
-  isPrivateMode: boolean;
-  setIsPrivateMode: (value: boolean) => void;
   selectedMonth: number | 'all';
   setSelectedMonth: (value: number | 'all') => void;
   selectedYear: number | 'all';
@@ -24,8 +22,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   shoots, 
   clients, 
   onViewShoot, 
-  isPrivateMode, 
-  setIsPrivateMode,
   selectedMonth,
   setSelectedMonth,
   selectedYear,
@@ -58,7 +54,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   const totalToReceive = totalContracted - totalReceived;
 
   const formatCurrency = (value: number) => {
-    if (isPrivateMode) return 'R$ •••••';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
@@ -135,15 +130,6 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         <div className="flex gap-2 w-full md:w-auto">
-          {/* Botão de Privacidade */}
-          <button 
-            onClick={() => setIsPrivateMode(!isPrivateMode)}
-            className={`w-12 h-10 flex items-center justify-center border rounded-xl transition-all ${isPrivateMode ? 'bg-amber-50 border-amber-200 text-amber-600 shadow-inner' : 'bg-white border-slate-200 text-slate-400 hover:text-indigo-600 hover:bg-slate-50'}`}
-            title={isPrivateMode ? "Mostrar valores" : "Ocultar valores"}
-          >
-            <i className={`fas ${isPrivateMode ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-          </button>
-
           <button 
             onClick={() => setIsBudgetModalOpen(true)}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white border border-indigo-600 rounded-xl transition-all shadow-lg shadow-indigo-100 font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-700"

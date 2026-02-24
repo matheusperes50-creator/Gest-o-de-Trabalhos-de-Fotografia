@@ -21,8 +21,7 @@ const App: React.FC = () => {
   const [isCloudSynced, setIsCloudSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   
-  // Estados Persistentes (Filtros e Privacidade)
-  const [isPrivateMode, setIsPrivateMode] = useState(true); // Começa sempre oculto
+  // Estados Persistentes (Filtros)
   const [dashboardMonth, setDashboardMonth] = useState<number | 'all'>('all');
   const [dashboardYear, setDashboardYear] = useState<number | 'all'>('all');
   const [shootMonth, setShootMonth] = useState<number | 'all'>('all');
@@ -42,7 +41,6 @@ const App: React.FC = () => {
     const storedSettings = localStorage.getItem(SETTINGS_KEY);
     if (storedSettings) {
       const settings = JSON.parse(storedSettings);
-      setIsPrivateMode(settings.isPrivateMode ?? true);
       setDashboardMonth(settings.dashboardMonth ?? 'all');
       setDashboardYear(settings.dashboardYear ?? 'all');
       setShootMonth(settings.shootMonth ?? 'all');
@@ -73,14 +71,13 @@ const App: React.FC = () => {
   // Salvar preferências sempre que mudarem
   useEffect(() => {
     const settings = {
-      isPrivateMode,
       dashboardMonth,
       dashboardYear,
       shootMonth,
       shootYear
     };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  }, [isPrivateMode, dashboardMonth, dashboardYear, shootMonth, shootYear]);
+  }, [dashboardMonth, dashboardYear, shootMonth, shootYear]);
 
   /**
    * Sincroniza o estado atual com o LocalStorage e com a Planilha Google
@@ -206,8 +203,6 @@ const App: React.FC = () => {
           shoots={shoots} 
           clients={clients} 
           onViewShoot={handleEditShoot}
-          isPrivateMode={isPrivateMode}
-          setIsPrivateMode={setIsPrivateMode}
           selectedMonth={dashboardMonth}
           setSelectedMonth={setDashboardMonth}
           selectedYear={dashboardYear}
@@ -221,7 +216,6 @@ const App: React.FC = () => {
           onAddShoot={handleAddShoot} 
           onEditShoot={handleEditShoot} 
           onDeleteShoot={handleDeleteShoot}
-          isPrivateMode={isPrivateMode}
           monthFilter={shootMonth}
           setMonthFilter={setShootMonth}
           yearFilter={shootYear}

@@ -18,7 +18,8 @@ export enum ShootType {
   ENSAIO_CASAL = 'Ensaio Casal',
   ENSAIO_GESTANTE = 'Ensaio Gestante',
   CHA_REVELACAO = 'Chá Revelação',
-  ENSAIO_REVELACAO = 'Ensaio Revelação'
+  ENSAIO_REVELACAO = 'Ensaio Revelação',
+  ENSAIO_FAMILIA = 'Ensaio Família'
 }
 
 export interface Client {

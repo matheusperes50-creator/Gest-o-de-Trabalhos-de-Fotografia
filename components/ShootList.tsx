@@ -9,7 +9,6 @@ interface ShootListProps {
   onAddShoot: () => void;
   onEditShoot: (shoot: Shoot) => void;
   onDeleteShoot: (id: string) => void;
-  isPrivateMode: boolean;
   monthFilter: number | 'all';
   setMonthFilter: (value: number | 'all') => void;
   yearFilter: number | 'all';
@@ -27,7 +26,6 @@ const ShootList: React.FC<ShootListProps> = ({
   onAddShoot, 
   onEditShoot, 
   onDeleteShoot,
-  isPrivateMode,
   monthFilter,
   setMonthFilter,
   yearFilter,
@@ -45,7 +43,6 @@ const ShootList: React.FC<ShootListProps> = ({
   }, [shoots]);
 
   const formatCurrency = (value: number) => {
-    if (isPrivateMode) return 'R$ •••••';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
