@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shoot, Client, ShootStatus, ShootType, AIAdvice } from '../types';
 import { generateShootAdvice } from '../services/geminiService';
+import { formatLocalDate } from '../utils/dateUtils';
 
 interface ShootModalProps {
   isOpen: boolean;
@@ -78,7 +79,7 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
 
   const shareIndividualWhatsApp = async () => {
     const client = clients.find(c => c.id === formData.clientId);
-    const dateStr = isDateTBD ? "_A definir_" : new Intl.DateTimeFormat('pt-BR').format(new Date(formData.shootDate || ''));
+    const dateStr = isDateTBD ? "_A definir_" : formatLocalDate(formData.shootDate);
     
     let message = `📸 *DETALHES DO TRABALHO*\n\n`;
     message += `*Tipo:* ${formData.type}\n`;
@@ -287,14 +288,14 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
           {/* AI Helper Side */}
           <div className="lg:col-span-2 bg-indigo-50/40 rounded-[2.5rem] p-8 border border-indigo-100 flex flex-col shadow-inner">
             <div className="flex items-center justify-between mb-8">
-              <h4 className="font-black text-indigo-900 flex items-center gap-3 text-sm">
+              <h4 className="font-black text-emerald-900 flex items-center gap-3 text-sm">
                 <i className="fas fa-wand-magic-sparkles"></i>
                 GestãoFoto AI
               </h4>
               <button 
                 onClick={handleGenerateAI}
                 disabled={isGenerating || !formData.clientId}
-                className="text-[10px] font-black px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50 uppercase tracking-widest"
+                className="text-[10px] font-black px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 uppercase tracking-widest"
               >
                 {isGenerating ? 'Gerando...' : 'Gerar Ideias'}
               </button>
@@ -304,23 +305,23 @@ const ShootModal: React.FC<ShootModalProps> = ({ isOpen, onClose, onSave, onDele
               {!aiAdvice && !isGenerating ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-40">
                   <i className="fas fa-robot text-4xl mb-4"></i>
-                  <p className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Use nossa IA para criar legendas e checklists de marketing.</p>
+                  <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Use nossa IA para criar legendas e checklists de marketing.</p>
                 </div>
               ) : isGenerating ? (
                 <div className="h-full flex flex-col items-center justify-center space-y-4">
-                    <div className="w-10 h-10 border-4 border-indigo-600/10 border-t-indigo-600 rounded-full animate-spin"></div>
-                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Consultando Gemini...</p>
+                    <div className="w-10 h-10 border-4 border-emerald-600/10 border-t-emerald-600 rounded-full animate-spin"></div>
+                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Consultando Gemini...</p>
                 </div>
               ) : (
                 <div className="space-y-6 animate-in fade-in duration-500">
-                  <div className="p-6 bg-white border border-indigo-100 rounded-3xl text-xs text-slate-700 leading-relaxed shadow-sm italic">
-                    <h5 className="text-[9px] font-black text-indigo-500 uppercase mb-2">Sugestão de Legenda</h5>
+                  <div className="p-6 bg-white border border-emerald-100 rounded-3xl text-xs text-slate-700 leading-relaxed shadow-sm italic">
+                    <h5 className="text-[9px] font-black text-emerald-500 uppercase mb-2">Sugestão de Legenda</h5>
                     {aiAdvice?.instagramCaption}
                   </div>
                   <div className="space-y-2">
-                    <h5 className="text-[9px] font-black text-indigo-500 uppercase">Checklist do Ensaio</h5>
+                    <h5 className="text-[9px] font-black text-emerald-500 uppercase">Checklist do Ensaio</h5>
                     {aiAdvice?.checklist.map((item, i) => (
-                      <div key={i} className="flex gap-2 p-3 bg-white border border-indigo-100 rounded-xl text-[10px] font-bold text-slate-700">
+                      <div key={i} className="flex gap-2 p-3 bg-white border border-emerald-100 rounded-xl text-[10px] font-bold text-slate-700">
                          <i className="fas fa-check text-emerald-500"></i>
                          {item}
                       </div>

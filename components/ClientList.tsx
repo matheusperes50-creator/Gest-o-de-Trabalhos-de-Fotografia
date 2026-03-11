@@ -41,7 +41,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, onAddClient, onEditCli
           </button>
           <button 
             onClick={onAddClient}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-3 bg-gradient-green text-white rounded-2xl font-black text-sm uppercase tracking-wider hover:brightness-110 transition-all shadow-xl shadow-emerald-100"
           >
             <i className="fas fa-user-plus"></i>
             <span>Novo Cliente</span>
@@ -57,7 +57,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, onAddClient, onEditCli
             <div className="absolute top-6 right-6 flex gap-2 z-10">
               <button 
                 onClick={() => onEditClient(client)}
-                className="text-slate-400 hover:text-indigo-600 transition-colors p-2 bg-white rounded-lg shadow-sm border border-slate-100"
+                className="text-slate-400 hover:text-emerald-600 transition-colors p-2 bg-white rounded-lg shadow-sm border border-slate-100"
                 title="Editar"
               >
                 <i className="fas fa-edit"></i>
@@ -94,7 +94,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, onAddClient, onEditCli
 
             <div className="mt-8 pt-6 border-t border-slate-50 flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
               <span>Status: Ativo</span>
-              <button onClick={() => onEditClient(client)} className="text-indigo-500 hover:underline">Ver Detalhes</button>
+              <button onClick={() => onEditClient(client)} className="text-emerald-500 hover:underline">Ver Detalhes</button>
             </div>
           </div>
         ))}

@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Shoot, Client, ShootStatus, ShootType } from '../types';
 import { STATUS_COLORS, SHOOT_TYPE_ICONS } from '../constants';
+import { formatLocalDate, parseLocalDate } from '../utils/dateUtils';
 
 interface ShootListProps {
   shoots: Shoot[];
@@ -56,7 +57,8 @@ const ShootList: React.FC<ShootListProps> = ({
     
     let matchesDate = true;
     if (shoot.shootDate !== "A definir") {
-      const date = new Date(shoot.shootDate);
+      const date = parseLocalDate(shoot.shootDate);
+      if (!date) return false;
       const matchesMonth = monthFilter === 'all' || date.getMonth() === monthFilter;
       const matchesYear = yearFilter === 'all' || date.getFullYear() === yearFilter;
       matchesDate = matchesMonth && matchesYear;
@@ -77,7 +79,7 @@ const ShootList: React.FC<ShootListProps> = ({
 
     filteredShoots.forEach((s, i) => {
       const client = clients.find(c => c.id === s.clientId);
-      const dateStr = s.shootDate === "A definir" ? "_A definir_" : new Intl.DateTimeFormat('pt-BR').format(new Date(s.shootDate));
+      const dateStr = s.shootDate === "A definir" ? "_A definir_" : formatLocalDate(s.shootDate);
       message += `*${i + 1}. ${s.type}*\n`;
       message += `👤 Cliente: ${client?.name || '---'}\n`;
       message += `📅 Data: ${dateStr}\n`;
@@ -103,7 +105,7 @@ const ShootList: React.FC<ShootListProps> = ({
           <input 
             type="text" 
             placeholder="Buscar por cliente, serviço ou local..." 
-            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-sm"
+            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-medium text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -132,7 +134,7 @@ const ShootList: React.FC<ShootListProps> = ({
           </div>
 
           <select 
-            className="px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:border-indigo-200 transition-colors"
+            className="px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:border-emerald-200 transition-colors"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
           >
@@ -150,7 +152,7 @@ const ShootList: React.FC<ShootListProps> = ({
           
           <button 
             onClick={onAddShoot}
-            className="flex-1 xl:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
+            className="flex-1 xl:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-gradient-green text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-emerald-100"
           >
             <i className="fas fa-plus"></i>
             <span>Novo</span>
@@ -186,7 +188,7 @@ const ShootList: React.FC<ShootListProps> = ({
                         <div className="max-w-[180px] md:max-w-xs">
                           <p className="font-black text-slate-800 text-sm leading-tight truncate">{client?.name || '---'}</p>
                           <div className="flex flex-col">
-                            <p className="text-[9px] text-indigo-500 font-black uppercase tracking-widest mt-0.5">{shoot.type}</p>
+                            <p className="text-[9px] text-emerald-500 font-black uppercase tracking-widest mt-0.5">{shoot.type}</p>
                             {shoot.location && (
                               <p className="text-[9px] text-slate-400 font-bold flex items-center gap-1 truncate mt-0.5">
                                 <i className="fas fa-location-dot text-[7px]"></i>
@@ -199,9 +201,9 @@ const ShootList: React.FC<ShootListProps> = ({
                     </td>
                     <td className="px-6 py-5 text-sm text-slate-600 font-bold">
                       {isTBD ? (
-                        <span className="text-indigo-400 italic">A definir</span>
+                        <span className="text-emerald-400 italic">A definir</span>
                       ) : (
-                        new Intl.DateTimeFormat('pt-BR').format(new Date(shoot.shootDate))
+                        formatLocalDate(shoot.shootDate)
                       )}
                     </td>
                     <td className="px-6 py-5">
@@ -223,7 +225,7 @@ const ShootList: React.FC<ShootListProps> = ({
                       <div className="flex justify-end gap-2">
                         <button 
                           onClick={() => onEditShoot(shoot)}
-                          className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                          className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
                           title="Editar"
                         >
                           <i className="fas fa-edit text-sm"></i>

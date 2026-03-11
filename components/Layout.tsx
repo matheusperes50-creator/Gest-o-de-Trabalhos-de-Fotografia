@@ -13,10 +13,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-slate-900 text-white p-6 shadow-xl sticky top-0 h-screen">
+      <aside className="hidden md:flex flex-col w-64 bg-gradient-dark-green text-white p-6 shadow-xl sticky top-0 h-screen">
         <div className="flex items-center gap-3 mb-12">
           <div className="flex items-center gap-2">
-            <i className="fas fa-camera-retro text-indigo-400 text-xl"></i>
+            <i className="fas fa-camera-retro text-emerald-400 text-xl"></i>
             <h1 className="text-xl font-black tracking-tighter">GestãoFoto</h1>
           </div>
         </div>
@@ -24,21 +24,21 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
         <nav className="flex-1 space-y-2">
           <button 
             onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'dashboard' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/10' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'dashboard' ? 'bg-gradient-green text-white shadow-lg shadow-emerald-500/20' : 'text-emerald-100/60 hover:bg-white/10 hover:text-white'}`}
           >
             <i className="fas fa-chart-pie w-5"></i>
             <span className="text-sm font-bold">Dashboard</span>
           </button>
           <button 
             onClick={() => setActiveTab('shoots')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'shoots' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/10' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'shoots' ? 'bg-gradient-green text-white shadow-lg shadow-emerald-500/20' : 'text-emerald-100/60 hover:bg-white/10 hover:text-white'}`}
           >
             <i className="fas fa-briefcase w-5"></i>
             <span className="text-sm font-bold">Trabalhos</span>
           </button>
           <button 
             onClick={() => setActiveTab('clients')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'clients' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/10' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'clients' ? 'bg-gradient-green text-white shadow-lg shadow-emerald-500/20' : 'text-emerald-100/60 hover:bg-white/10 hover:text-white'}`}
           >
             <i className="fas fa-users w-5"></i>
             <span className="text-sm font-bold">Clientes</span>
@@ -64,7 +64,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
         <header className="bg-white border-b border-slate-200 px-4 md:px-8 py-3 sticky top-0 z-50 flex justify-between items-center shadow-sm backdrop-blur-md bg-white/80">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <i className="fas fa-camera-retro text-indigo-600"></i>
+              <i className="fas fa-camera-retro text-emerald-600"></i>
               <h2 className="text-[10px] md:text-xs font-black text-slate-800 uppercase tracking-[0.2em] truncate">
                 GestãoFoto &raquo; {activeTab}
               </h2>
@@ -74,10 +74,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
           <div className="flex items-center gap-4">
              <button 
               onClick={() => window.location.reload()}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:bg-slate-50 ${isSyncing ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-100'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:bg-slate-50 ${isSyncing ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}
              >
-                <i className={`fas ${isSyncing ? 'fa-sync-alt fa-spin text-indigo-500' : isCloudSynced ? 'fa-cloud text-emerald-500' : 'fa-wifi-slash text-amber-500'} text-[10px]`}></i>
-                <span className={`text-[9px] font-black uppercase tracking-widest ${isSyncing ? 'text-indigo-600' : 'text-slate-400'}`}>
+                <i className={`fas ${isSyncing ? 'fa-sync-alt fa-spin text-emerald-500' : isCloudSynced ? 'fa-cloud text-emerald-500' : 'fa-wifi-slash text-amber-500'} text-[10px]`}></i>
+                <span className={`text-[9px] font-black uppercase tracking-widest ${isSyncing ? 'text-emerald-600' : 'text-slate-400'}`}>
                   {isSyncing ? 'Salvando...' : 'Nuvem OK'}
                 </span>
              </button>
@@ -90,15 +90,15 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isSy
 
         {/* Mobile Nav */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-3 z-50 shadow-2xl">
-          <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-1 ${activeTab === 'dashboard' ? 'text-indigo-600' : 'text-slate-400'}`}>
+          <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-1 ${activeTab === 'dashboard' ? 'text-emerald-600' : 'text-slate-400'}`}>
             <i className="fas fa-chart-pie text-lg"></i>
             <span className="text-[9px] font-black uppercase">Home</span>
           </button>
-          <button onClick={() => setActiveTab('shoots')} className={`flex flex-col items-center gap-1 ${activeTab === 'shoots' ? 'text-indigo-600' : 'text-slate-400'}`}>
+          <button onClick={() => setActiveTab('shoots')} className={`flex flex-col items-center gap-1 ${activeTab === 'shoots' ? 'text-emerald-600' : 'text-slate-400'}`}>
             <i className="fas fa-briefcase text-lg"></i>
-            <span className="text-[9px] font-black uppercase">Jobs</span>
+            <span className="text-[9px] font-black uppercase">Trabalhos</span>
           </button>
-          <button onClick={() => setActiveTab('clients')} className={`flex flex-col items-center gap-1 ${activeTab === 'clients' ? 'text-indigo-600' : 'text-slate-400'}`}>
+          <button onClick={() => setActiveTab('clients')} className={`flex flex-col items-center gap-1 ${activeTab === 'clients' ? 'text-emerald-600' : 'text-slate-400'}`}>
             <i className="fas fa-users text-lg"></i>
             <span className="text-[9px] font-black uppercase">Clientes</span>
           </button>

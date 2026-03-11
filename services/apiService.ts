@@ -17,7 +17,7 @@ import { Shoot, Client } from '../types';
  * function doPost(e) {
  *   var ss = SpreadsheetApp.getActiveSpreadsheet();
  *   var dbSheet = ss.getSheetByName("lensflow_db") || ss.insertSheet("lensflow_db");
- *   var humanSheet = ss.getSheetByName("Visualizacao_Jobs") || ss.insertSheet("Visualizacao_Jobs");
+ *   var humanSheet = ss.getSheetByName("Visualizacao_Trabalhos") || ss.insertSheet("Visualizacao_Trabalhos");
  *   
  *   var dataString = e.postData.contents;
  *   var data = JSON.parse(dataString);

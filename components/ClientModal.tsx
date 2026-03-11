@@ -58,7 +58,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, onDe
               <input 
                 type="text" 
                 required
-                className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700"
+                className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-700"
                 value={formData.name}
                 onChange={e => setFormData({...formData, name: e.target.value})}
               />
@@ -72,7 +72,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, onDe
                 <i className="fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400"></i>
                 <input 
                   type="text" 
-                  className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700"
+                  className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-700"
                   value={formData.contact}
                   onChange={e => setFormData({...formData, contact: e.target.value})}
                 />
@@ -84,7 +84,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, onDe
                 <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
                 <input 
                   type="email" 
-                  className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700"
+                  className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-700"
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
                 />
@@ -95,7 +95,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, onDe
           <div className="flex flex-col gap-3">
             <button 
               type="submit"
-              className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
+              className="w-full py-5 bg-gradient-green text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-emerald-100"
             >
               {client ? 'Atualizar Dados' : 'Criar Cliente'}
             </button>

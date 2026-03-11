@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Shoot, Client, ShootStatus } from '../types';
 import BudgetModal from './BudgetModal';
+import { formatLocalDate, parseLocalDate } from '../utils/dateUtils';
 
 interface DashboardProps {
   shoots: Shoot[];
@@ -34,7 +35,10 @@ const Dashboard: React.FC<DashboardProps> = ({
   const availableYears = useMemo(() => {
     const years = shoots
       .filter(s => s.shootDate && s.shootDate !== "A definir")
-      .map(s => new Date(s.shootDate).getFullYear());
+      .map(s => {
+        const date = parseLocalDate(s.shootDate);
+        return date ? date.getFullYear() : new Date().getFullYear();
+      });
     return Array.from(new Set([...years, new Date().getFullYear()])).sort((a, b) => b - a);
   }, [shoots]);
 
@@ -42,7 +46,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   const filteredByPeriod = useMemo(() => {
     return shoots.filter(s => {
       if (s.shootDate === "A definir") return selectedMonth === 'all' && selectedYear === 'all';
-      const date = new Date(s.shootDate);
+      const date = parseLocalDate(s.shootDate);
+      if (!date) return false;
       const matchesMonth = selectedMonth === 'all' || date.getMonth() === selectedMonth;
       const matchesYear = selectedYear === 'all' || date.getFullYear() === selectedYear;
       return matchesMonth && matchesYear;
@@ -71,7 +76,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     
     upcoming.forEach((s, i) => {
       const client = clients.find(c => c.id === s.clientId);
-      const dateStr = s.shootDate === "A definir" ? "_A definir_" : new Intl.DateTimeFormat('pt-BR').format(new Date(s.shootDate));
+      const dateStr = s.shootDate === "A definir" ? "_A definir_" : formatLocalDate(s.shootDate);
       message += `*${i + 1}. ${s.type}*\n`;
       message += `👤 Cliente: ${client?.name || '---'}\n`;
       message += `📅 Data: ${dateStr}\n`;
@@ -94,7 +99,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     { label: 'Total Contratado', value: formatCurrency(totalContracted), icon: 'fa-file-invoice-dollar', color: 'text-slate-600', bg: 'bg-slate-100' },
     { label: 'Recebido', value: formatCurrency(totalReceived), icon: 'fa-hand-holding-dollar', color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { label: 'A Receber', value: formatCurrency(totalToReceive), icon: 'fa-clock-rotate-left', color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Jobs no Período', value: filteredByPeriod.length, icon: 'fa-camera', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { label: 'Trabalhos no Período', value: filteredByPeriod.length, icon: 'fa-camera', color: 'text-emerald-600', bg: 'bg-emerald-50' },
   ];
 
   return (
@@ -102,7 +107,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       {/* Barra de Filtros Temporal e Orçamento */}
       <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
             <i className="fas fa-filter"></i>
           </div>
           <div>
@@ -111,7 +116,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               <select 
                 value={selectedMonth} 
                 onChange={(e) => setSelectedMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                className="text-sm font-bold text-slate-700 bg-transparent outline-none cursor-pointer hover:text-indigo-600 transition-colors"
+                className="text-sm font-bold text-slate-700 bg-transparent outline-none cursor-pointer hover:text-emerald-600 transition-colors"
               >
                 <option value="all">Todos os Meses</option>
                 {MONTHS.map((m, idx) => <option key={m} value={idx}>{m}</option>)}
@@ -132,7 +137,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className="flex gap-2 w-full md:w-auto">
           <button 
             onClick={() => setIsBudgetModalOpen(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white border border-indigo-600 rounded-xl transition-all shadow-lg shadow-indigo-100 font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-700"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-green text-white border border-emerald-600 rounded-xl transition-all shadow-lg shadow-emerald-100 font-bold text-[10px] uppercase tracking-widest hover:brightness-110"
           >
             <i className="fas fa-magic"></i>
             Gerar Orçamento
@@ -168,7 +173,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center text-sm">
-            <h3 className="font-bold text-slate-800">Jobs no Período</h3>
+            <h3 className="font-bold text-slate-800">Trabalhos no Período</h3>
             <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
               {selectedMonth !== 'all' ? MONTHS[selectedMonth] : 'Geral'} {selectedYear === 'all' ? '' : selectedYear}
             </span>
@@ -179,17 +184,18 @@ const Dashboard: React.FC<DashboardProps> = ({
                 const client = clients.find(c => c.id === shoot.clientId);
                 const isPaid = (shoot.paidAmount || 0) >= (shoot.price || 0);
                 const isTBD = shoot.shootDate === "A definir";
+                const shootDateObj = parseLocalDate(shoot.shootDate);
                 
                 return (
                   <div key={shoot.id} className="p-6 hover:bg-slate-50 transition-colors flex items-center justify-between group">
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 ${isTBD ? 'bg-slate-200' : 'bg-slate-900'} text-white rounded-lg flex flex-col items-center justify-center leading-none`}>
-                        {isTBD ? (
+                        {isTBD || !shootDateObj ? (
                           <i className="fas fa-question text-slate-400"></i>
                         ) : (
                           <>
-                            <span className="text-[10px] font-bold uppercase">{new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(new Date(shoot.shootDate))}</span>
-                            <span className="text-lg font-black">{new Date(shoot.shootDate).getDate()}</span>
+                            <span className="text-[10px] font-bold uppercase">{new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(shootDateObj)}</span>
+                            <span className="text-lg font-black">{shootDateObj.getDate()}</span>
                           </>
                         )}
                       </div>
@@ -223,30 +229,30 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         <div className="space-y-6">
-          <div className="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden group">
+          <div className="bg-gradient-dark-green rounded-3xl p-6 text-white shadow-xl relative overflow-hidden group">
             <div className="relative z-10">
               <h3 className="text-base font-black mb-1 uppercase tracking-tight">Saúde do Período</h3>
-              <p className="text-indigo-100 text-[10px] mb-6 font-bold uppercase tracking-widest">Liquidez de {selectedMonth !== 'all' ? MONTHS[selectedMonth] : 'Geral'}</p>
+              <p className="text-emerald-100 text-[10px] mb-6 font-bold uppercase tracking-widest">Liquidez de {selectedMonth !== 'all' ? MONTHS[selectedMonth] : 'Geral'}</p>
               
               <div className="space-y-4">
                 <div>
-                  <div className="flex justify-between text-[10px] font-black text-indigo-200 mb-1 tracking-widest">
+                  <div className="flex justify-between text-[10px] font-black text-emerald-200 mb-1 tracking-widest">
                     <span>RECEBIMENTO</span>
                     <span>{totalContracted > 0 ? Math.round((totalReceived / totalContracted) * 100) : 0}%</span>
                   </div>
-                  <div className="w-full bg-indigo-900/30 h-2 rounded-full overflow-hidden border border-indigo-500/30">
+                  <div className="w-full bg-emerald-900/30 h-2 rounded-full overflow-hidden border border-emerald-500/30">
                     <div 
                       className="h-full bg-white rounded-full shadow-inner transition-all duration-1000" 
                       style={{ width: `${totalContracted > 0 ? Math.min((totalReceived / totalContracted) * 100, 100) : 0}%` }}
                     ></div>
                   </div>
                 </div>
-                <div className="pt-4 border-t border-indigo-500/30">
-                   <p className="text-[9px] text-indigo-100 uppercase font-black">Total Contratado</p>
+                <div className="pt-4 border-t border-emerald-500/30">
+                   <p className="text-[9px] text-emerald-100 uppercase font-black">Total Contratado</p>
                    <p className="text-xl font-black">{formatCurrency(totalContracted)}</p>
                 </div>
                 <div className="pt-2">
-                   <p className="text-[9px] text-indigo-100 uppercase font-black">A Receber</p>
+                   <p className="text-[9px] text-emerald-100 uppercase font-black">A Receber</p>
                    <p className="text-lg font-black text-amber-400">{formatCurrency(totalToReceive)}</p>
                 </div>
               </div>
